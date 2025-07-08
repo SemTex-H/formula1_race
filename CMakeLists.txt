@@ -22,8 +22,12 @@ if(BUILD_TESTING)
 endif()
 
 install(DIRECTORY
-launch
-config
-DESTINATION lib/${PROJECT_NAME})
+  launch
+  config
+  DESTINATION lib/${PROJECT_NAME})
 
+install(PROGRAMS
+  script/cam_test.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 ament_package()
