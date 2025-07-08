@@ -28,6 +28,7 @@ install(DIRECTORY
 
 install(PROGRAMS
   script/cam_test.py
+  script/lidar_test.py
   DESTINATION lib/${PROJECT_NAME}
 )
 ament_package()

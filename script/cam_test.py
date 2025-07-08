@@ -16,7 +16,6 @@ class CameraSubscriber(Node):
         self.cv_bridge = CvBridge()
 
     def listener_callback(self, msg):
-        self.get_logger().info('Image received')
         try:
             cv_image = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
             cv2.imshow('Camera Feed', cv_image)
