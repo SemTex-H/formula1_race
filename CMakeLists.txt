@@ -24,7 +24,7 @@ endif()
 install(DIRECTORY
   launch
   config
-  DESTINATION lib/${PROJECT_NAME})
+  DESTINATION share/${PROJECT_NAME})
 
 install(PROGRAMS
   script/cam_test.py
