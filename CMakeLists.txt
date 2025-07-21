@@ -8,6 +8,8 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -21,10 +23,19 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+add_executable(lidar_racing src/lidar_racing.cpp)
+ament_target_dependencies(lidar_racing rclcpp sensor_msgs geometry_msgs)
+
+install(TARGETS 
+	lidar_racing 
+	DESTINATION lib/${PROJECT_NAME}
+)
+
 install(DIRECTORY
   launch
   config
-  DESTINATION share/${PROJECT_NAME})
+  DESTINATION share/${PROJECT_NAME}
+)
 
 install(PROGRAMS
   script/cam_test.py

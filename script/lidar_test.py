@@ -4,7 +4,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
 
-class LidarLeaningForward(Node):
+class LidarLeaner(Node):
     def __init__(self):
         super().__init__('lidar_leaner')
 
@@ -14,45 +14,51 @@ class LidarLeaningForward(Node):
             self.scan_callback,
             10
         )
-
         self.pub = self.create_publisher(Twist, '/fastbot_1/cmd_vel', 10)
-        self.get_logger().info("Leaning-forward LiDAR racer started!")
+
+        self.get_logger().info("Lidar leaner with 1.5m clearance started!")
 
     def average_range(self, ranges, index, width=5):
         n = len(ranges)
         start = max(index - width, 0)
         end = min(index + width, len(ranges) - 1)
-        valid = [r for r in ranges[start:end+1] if 0.05 < r < 10.0]
-        return sum(valid) / len(valid) if valid else 0.0
+        valid = [r if 0.05 < r < 20.0 else 21.0 for r in ranges[start:end+1]]
+        return sum(valid) / len(valid) if valid else 20.0
 
     def scan_callback(self, msg: LaserScan):
         ranges = list(msg.ranges)
-        left_avg = self.average_range(ranges, 75)
-        right_avg = self.average_range(ranges, 285)
+        left = self.average_range(ranges, 75)
+        right = self.average_range(ranges, 25)
 
-        threshold = 1.5
-        steer_strength = 0.4
         twist = Twist()
-
-        # Always move forward
-        twist.linear.x = 1.8
-
-        # Decision logic
-        if left_avg >= threshold and left_avg > right_avg:
-            twist.angular.z = steer_strength
-            self.get_logger().info(f'LEAN LEFT: L={left_avg:.2f}, R={right_avg:.2f}')
-        elif right_avg >= threshold and right_avg > left_avg:
-            twist.angular.z = -steer_strength
-            self.get_logger().info(f'LEAN RIGHT: L={left_avg:.2f}, R={right_avg:.2f}')
+        twist.linear.x = 0.5
+        speed_a = 0.3
+        amplifier = 0.5
+        target_distance = 2
+        idx = 0
+        
+        if left < 10:
+            if left > target_distance:
+                twist.angular.z = speed_a
+                idx = 1
+            else:
+                twist.angular.z = -speed_a
+                idx = 2
         else:
-            twist.angular.z = 0.0
-            self.get_logger().info(f'STRAIGHT: L={left_avg:.2f}, R={right_avg:.2f}')
+            if right > target_distance:
+                twist.angular.z = -speed_a
+                idx = 3
+            else:
+                twist.angular.z = speed_a
+                idx = 4
+
+        self.get_logger().info(f"L: {left:.2f}, R: {right:.2f} C: {idx}")
 
         self.pub.publish(twist)
 
 def main(args=None):
     rclpy.init(args=args)
-    node = LidarLeaningForward()
+    node = LidarLeaner()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
